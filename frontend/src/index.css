@@ -1,0 +1,10 @@
+/* Global styles are handled by MUI's CssBaseline and theme (src/theme.js). */
+#root {
+  min-height: 100vh;
+}
+
+/* The app bar is fixed (56-64px high): keep elements that receive keyboard focus, or are scrolled
+   into view, from ending up hidden underneath it (WCAG 2.4.11 Focus Not Obscured). */
+html {
+  scroll-padding-top: 72px;
+}

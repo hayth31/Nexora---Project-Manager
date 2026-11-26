@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexora-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS:-postgres}
+      POSTGRES_DB: ${POSTGRES_NAME:-nexora}
+    ports:
+      - "5432:5432"
+    volumes:
+      - nexora_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_NAME:-nexora}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend/pm-service
+    container_name: nexora-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      IS_LOCAL: "true"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_NAME: ${POSTGRES_NAME:-nexora}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASS: ${POSTGRES_PASS:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-local-development-only-jwt-secret-change-me}
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: nexora-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  nexora_pgdata:
