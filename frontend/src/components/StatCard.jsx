@@ -11,8 +11,17 @@ import { Link as RouterLink } from 'react-router-dom'
  */
 const linkedTileSx = {
   height: '100%',
-  transition: (theme) => theme.transitions.create(['border-color', 'box-shadow'], { duration: theme.transitions.duration.shorter }),
-  '@media (hover: hover)': { '&:hover': { borderColor: 'primary.main', boxShadow: 2 } },
+  overflow: 'hidden',
+  borderTop: '3px solid',
+  borderTopColor: 'primary.main',
+  transition: (theme) => theme.transitions.create(['border-color', 'box-shadow', 'transform'], { duration: theme.transitions.duration.shorter }),
+  '@media (hover: hover)': {
+    '&:hover': {
+      borderColor: 'primary.main',
+      boxShadow: '0 8px 24px rgba(79, 70, 229, 0.12)',
+      transform: 'translateY(-2px)',
+    },
+  },
 }
 
 /** The link fills the whole tile; MUI's ButtonBase removes the browser outline, so draw a focus ring. */

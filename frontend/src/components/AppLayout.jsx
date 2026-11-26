@@ -46,13 +46,13 @@ export default function AppLayout() {
   }
 
   const navigation = (
-    <Box component="nav" aria-label="Main navigation">
+    <Box component="nav" aria-label="Main navigation" sx={{ py: 1 }}>
       <Toolbar />
-      <Divider />
-      <List>
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.08)', mb: 1 }} />
+      <List sx={{ px: 0.5 }}>
         {NAV_ITEMS.filter((item) => can(item.permission)).map((item) => (
           // <li> wrapper keeps the <ul> valid for screen readers (axe "list" rule)
-          <ListItem key={item.to} disablePadding>
+          <ListItem key={item.to} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               component={NavLink}
               to={item.to}
@@ -61,11 +61,20 @@ export default function AppLayout() {
               sx={{
                 mx: 1,
                 borderRadius: 2,
-                '&.active': { bgcolor: 'action.selected', color: 'primary.main', '& .MuiListItemIcon-root': { color: 'primary.main' } },
+                color: '#cbd5e1',
+                transition: 'all 150ms ease',
+                '& .MuiListItemIcon-root': { color: '#94a3b8', transition: 'color 150ms ease' },
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.07)', color: '#ffffff', '& .MuiListItemIcon-root': { color: '#e2e8f0' } },
+                '&.active': {
+                  background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.36) 0%, rgba(124, 58, 237, 0.22) 100%)',
+                  color: '#ffffff',
+                  boxShadow: 'inset 3px 0 0 #818cf8',
+                  '& .MuiListItemIcon-root': { color: '#a5b4fc' },
+                },
               }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
+              <ListItemText primary={item.label} slotProps={{ primary: { fontWeight: 500, fontSize: '0.925rem' } }} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -73,8 +82,16 @@ export default function AppLayout() {
     </Box>
   )
 
+  const drawerPaperSx = {
+    width: DRAWER_WIDTH,
+    boxSizing: 'border-box',
+    background: 'linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%)',
+    color: '#f8fafc',
+    borderRight: 'none',
+  }
+
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       <Link
         href="#main-content"
         onClick={(event) => {
@@ -85,20 +102,60 @@ export default function AppLayout() {
       >
         Skip to main content
       </Link>
-      <AppBar position="fixed" color="inherit" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, borderBottom: 1, borderColor: 'divider' }}>
+      <AppBar
+        position="fixed"
+        color="inherit"
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          bgcolor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
         <Toolbar>
           {isMobile && (
             <IconButton edge="start" aria-label="Open navigation menu" onClick={() => setMenuOpen(true)} sx={{ mr: 1 }}>
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="h6" component="div" noWrap sx={{ flexGrow: 1, color: 'primary.main' }}>
-            {APP_NAME}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexGrow: 1 }}>
+            <Box
+              aria-hidden="true"
+              sx={{
+                width: 30,
+                height: 30,
+                borderRadius: 1.75,
+                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                color: '#ffffff',
+                display: 'grid',
+                placeItems: 'center',
+                fontWeight: 800,
+                fontSize: '0.95rem',
+                boxShadow: '0 2px 8px rgba(79, 70, 229, 0.35)',
+              }}
+            >
+              N
+            </Box>
+            <Typography
+              variant="h6"
+              component="div"
+              noWrap
+              sx={{
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                background: 'linear-gradient(135deg, #3730a3 0%, #6d28d9 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              {APP_NAME}
+            </Typography>
+          </Box>
           {user && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {!isMobile && (
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" color="textSecondary" sx={{ fontWeight: 500 }}>
                   {user.full_name}
                 </Typography>
               )}
@@ -114,11 +171,11 @@ export default function AppLayout() {
       </AppBar>
 
       {isMobile ? (
-        <Drawer variant="temporary" open={menuOpen} onClose={() => setMenuOpen(false)} slotProps={{ paper: { sx: { width: DRAWER_WIDTH } } }}>
+        <Drawer variant="temporary" open={menuOpen} onClose={() => setMenuOpen(false)} slotProps={{ paper: { sx: drawerPaperSx } }}>
           {navigation}
         </Drawer>
       ) : (
-        <Drawer variant="permanent" sx={{ width: DRAWER_WIDTH, flexShrink: 0 }} slotProps={{ paper: { sx: { width: DRAWER_WIDTH, boxSizing: 'border-box' } } }}>
+        <Drawer variant="permanent" sx={{ width: DRAWER_WIDTH, flexShrink: 0 }} slotProps={{ paper: { sx: drawerPaperSx } }}>
           {navigation}
         </Drawer>
       )}

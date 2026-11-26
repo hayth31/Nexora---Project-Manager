@@ -82,15 +82,15 @@ export function columnStatusText(column) {
 }
 
 /**
- * Cell shading by allocation %, one step per quarter of full time: light to darker tints of the app's
- * blue (Tailwind blue 100-400, the family of the theme's primary #1d4ed8). The cell text is HEAT_TEXT
- * on every step, at 6.9:1 contrast or more (WCAG AA asks 4.5:1; heatmapGrid.test.js checks each pair).
+ * Thermal capacity shading by allocation %: cool ice-blue at low load, warming through amber and
+ * orange, and turning coral-red near/above capacity. Every background maintains >= 4.5:1 WCAG AA
+ * contrast with HEAT_TEXT (#111827) and strictly darkens from step 1 to step 4.
  */
 export const HEAT_STEPS = [
-  { max: 25, label: '1–25%', background: '#dbeafe' },
-  { max: 50, label: '26–50%', background: '#bfdbfe' },
-  { max: 75, label: '51–75%', background: '#93c5fd' },
-  { max: 100, label: '76–100%', background: '#60a5fa' },
+  { max: 25, label: '1–25%', background: '#ecfeff' },
+  { max: 50, label: '26–50%', background: '#fef3c7' },
+  { max: 75, label: '51–75%', background: '#fed7aa' },
+  { max: 100, label: '76–100%', background: '#fecaca' },
 ]
 
 /** Text of the shaded cells (Tailwind gray 900). */
@@ -100,8 +100,9 @@ export const HEAT_TEXT = '#111827'
 export const MUTED_BACKGROUND = '#f3f4f6'
 export const MUTED_TEXT = '#4b5563'
 
-/** Behind a total over 100% (light red; the number itself is in the theme's error red). */
-export const OVER_ALLOCATED_BACKGROUND = '#fef2f2'
+/** Behind a total over 100% (vivid soft red; the number itself is in the theme's error red). */
+export const OVER_ALLOCATED_BACKGROUND = '#fee2e2'
+export const OVER_LIMIT_CELL_BACKGROUND = '#fca5a5'
 
 /** The HEAT_STEPS entry of an allocation % (the darkest one above 100%); null without an allocation. */
 export function heatStep(percent) {

@@ -72,16 +72,42 @@ export default function LoginPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2, bgcolor: 'background.default' }}>
-      <Paper component="main" sx={{ p: { xs: 3, sm: 5 }, width: '100%', maxWidth: 420 }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+        background: 'radial-gradient(circle at 18% 20%, #e0e7ff 0%, #f4f6fb 48%, #ede9fe 100%)',
+      }}
+    >
+      <Paper
+        component="main"
+        sx={{
+          p: { xs: 3, sm: 5 },
+          width: '100%',
+          maxWidth: 430,
+          borderTop: '4px solid',
+          borderTopColor: 'primary.main',
+          boxShadow: '0 20px 45px rgba(15, 23, 42, 0.08)',
+        }}
+      >
         <Stack spacing={1} sx={{ alignItems: 'center', mb: 3 }}>
-          <Avatar sx={{ bgcolor: 'primary.main' }}>
+          <Avatar
+            sx={{
+              width: 48,
+              height: 48,
+              background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              boxShadow: '0 6px 16px rgba(79, 70, 229, 0.3)',
+            }}
+          >
             <LockOutlinedIcon />
           </Avatar>
-          <Typography variant="h5" component="h1">
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
             {APP_NAME}
           </Typography>
-          <Typography color="textSecondary">Sign in to continue</Typography>
+          <Typography color="textSecondary">Project & Resource Intelligence · Sign in</Typography>
         </Stack>
 
         {sessionMessage && !error && (

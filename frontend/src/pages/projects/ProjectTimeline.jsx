@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import Box from '@mui/material/Box'
 import Link from '@mui/material/Link'
 import Paper from '@mui/material/Paper'
@@ -8,9 +8,9 @@ import { useMediaQuery } from 'react-responsive'
 import { Link as RouterLink } from 'react-router-dom'
 import { EmptyState } from '../../components/StateViews'
 import { useIsMobile } from '../../hooks/useIsMobile'
-import { todayIso } from '../../utils/format'
+import { formatDate, todayIso } from '../../utils/format'
 import { HEALTH_STATES, labelFor } from '../../utils/labels'
-import { buildTimeline, labelAnchor } from './timelineLayout'
+import { buildTimeline, labelAnchor, toIsoDate } from './timelineLayout'
 
 /** Phones get the fewest month labels; below 1200px the side menu leaves a narrower chart. */
 const PHONE_MAX_WIDTH = 599
@@ -96,6 +96,7 @@ export default function ProjectTimeline({
   const isCompact = useMediaQuery({ maxWidth: COMPACT_MAX_WIDTH })
   const maxTicks = tickLimit(isPhone, isCompact)
   const timeline = useMemo(() => buildTimeline(projects, { today, maxTicks }), [projects, today, maxTicks])
+  const [scrub, setScrub] = useState(null)
 
   if (!timeline.rows.length) {
     return (
@@ -110,14 +111,17 @@ export default function ProjectTimeline({
   return (
     <Paper sx={{ p: { xs: 1.5, md: 2 } }}>
       <Legend showToday={timeline.today !== null} />
-      <AxisHeader ticks={timeline.ticks} today={timeline.today} columns={columns} stacked={isMobile} />
+      <AxisHeader ticks={timeline.ticks} today={timeline.today} scrub={scrub} columns={columns} stacked={isMobile} />
       <Box component="ul" role="list" aria-label={ariaLabel} sx={{ listStyle: 'none', m: 0, p: 0 }}>
         {timeline.rows.map((row) => (
           <TimelineRow
             key={row.project.id}
             row={row}
+            axis={timeline.axis}
             ticks={timeline.ticks}
             today={timeline.today}
+            scrub={scrub}
+            onScrub={setScrub}
             columns={columns}
             stacked={isMobile}
           />
@@ -194,13 +198,13 @@ function TodayKey() {
 }
 
 /** Month labels above the bars and the "Today" label above its line (visual only: every row states its dates). */
-function AxisHeader({ ticks, today, columns, stacked }) {
+function AxisHeader({ ticks, today, scrub, columns, stacked }) {
   return (
     <Box aria-hidden="true" sx={{ display: 'grid', gridTemplateColumns: columns, columnGap: 2, px: 1 }}>
       {!stacked && <span />}
       <Box
         data-testid="timeline-axis"
-        sx={{ position: 'relative', overflow: 'hidden', height: (today === null ? 1 : 2) * AXIS_LINE_HEIGHT }}
+        sx={{ position: 'relative', overflow: 'hidden', height: (today === null && !scrub ? 1 : 2) * AXIS_LINE_HEIGHT }}
       >
         {ticks.map((tick) => (
           <Box key={tick.date} style={{ left: `${tick.percent}%` }} sx={gridline} />
@@ -236,16 +240,57 @@ function AxisHeader({ ticks, today, columns, stacked }) {
             Today
           </Typography>
         )}
+        {scrub && (
+          <Typography
+            variant="caption"
+            data-testid="timeline-scrub-date"
+            style={{ left: `${scrub.percent}%`, transform: ANCHOR_SHIFT[labelAnchor(scrub.percent)] }}
+            sx={{
+              position: 'absolute',
+              top: AXIS_LINE_HEIGHT,
+              px: 0.75,
+              borderRadius: 1,
+              bgcolor: 'secondary.main',
+              color: 'common.white',
+              fontWeight: 700,
+              lineHeight: `${AXIS_LINE_HEIGHT}px`,
+              whiteSpace: 'nowrap',
+              zIndex: 2,
+            }}
+          >
+            {scrub.dateLabel}
+          </Typography>
+        )}
       </Box>
     </Box>
   )
 }
 
-function TimelineRow({ row, ticks, today, columns, stacked }) {
+function TimelineRow({ row, axis, ticks, today, scrub, onScrub, columns, stacked }) {
   const { project } = row
+  const trackRef = useRef(null)
+  const isHovered = scrub?.rowId === project.id
+
+  const handleMouseMove = (event) => {
+    const track = trackRef.current
+    if (!track || !axis) return
+    const rect = track.getBoundingClientRect()
+    if (!rect.width || event.clientX < rect.left || event.clientX > rect.right) {
+      if (isHovered) onScrub(null)
+      return
+    }
+    const percent = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100))
+    const day = Math.min(axis.end - 1, Math.max(axis.start, axis.start + Math.floor((percent / 100) * axis.days)))
+    onScrub({ rowId: project.id, percent, dateLabel: formatDate(toIsoDate(day)) })
+  }
+
   return (
     <Box
       component="li"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => {
+        if (isHovered) onScrub(null)
+      }}
       sx={{
         position: 'relative',
         display: 'grid',
@@ -282,7 +327,7 @@ function TimelineRow({ row, ticks, today, columns, stacked }) {
         </Typography>
       </Box>
       {/* Beside the names the track spans the whole row (into its padding), so the lines run unbroken. */}
-      <Box aria-hidden="true" data-testid="timeline-track" sx={{ position: 'relative', minHeight: 20, my: stacked ? 0 : -1 }}>
+      <Box ref={trackRef} aria-hidden="true" data-testid="timeline-track" sx={{ position: 'relative', minHeight: 20, my: stacked ? 0 : -1 }}>
         {ticks.map((tick) => (
           <Box key={tick.date} style={{ left: `${tick.percent}%` }} sx={gridline} />
         ))}
@@ -300,6 +345,56 @@ function TimelineRow({ row, ticks, today, columns, stacked }) {
           </Box>
         )}
         {today !== null && <Box data-testid="timeline-today" style={{ left: `${today}%` }} sx={todayLine} />}
+        {scrub && (
+          <Box
+            data-testid="timeline-scrub-line"
+            style={{ left: `${scrub.percent}%` }}
+            sx={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              width: 1.5,
+              ml: '-0.75px',
+              bgcolor: 'secondary.main',
+              pointerEvents: 'none',
+              zIndex: 2,
+            }}
+          />
+        )}
+        {isHovered && (
+          <Paper
+            elevation={4}
+            data-testid="timeline-hover-card"
+            style={{ left: `${Math.min(82, Math.max(18, scrub.percent))}%` }}
+            sx={{
+              position: 'absolute',
+              bottom: 'calc(100% + 6px)',
+              transform: 'translateX(-50%)',
+              px: 1.5,
+              py: 1,
+              minWidth: 210,
+              pointerEvents: 'none',
+              zIndex: 10,
+              bgcolor: 'grey.900',
+              color: 'common.white',
+              borderColor: 'grey.700',
+              borderRadius: 2,
+            }}
+          >
+            <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: 'common.white' }}>
+              {project.name}
+            </Typography>
+            <Typography variant="caption" sx={{ display: 'block', color: 'grey.300' }}>
+              {row.dates}
+            </Typography>
+            <Typography variant="caption" sx={{ display: 'block', color: 'grey.200', mt: 0.25 }}>
+              {[row.state, row.progress].filter(Boolean).join(' · ')}
+            </Typography>
+            <Typography variant="caption" sx={{ display: 'block', color: 'secondary.light', fontWeight: 600, mt: 0.25 }}>
+              Pointer: {scrub.dateLabel}
+            </Typography>
+          </Paper>
+        )}
       </Box>
     </Box>
   )

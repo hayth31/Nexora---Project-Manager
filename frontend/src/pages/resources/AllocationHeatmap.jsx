@@ -28,6 +28,7 @@ import {
   MUTED_BACKGROUND,
   MUTED_TEXT,
   OVER_ALLOCATED_BACKGROUND,
+  OVER_LIMIT_CELL_BACKGROUND,
 } from './heatmapGrid'
 import { OverAllocatedChip } from './ResourceBits'
 import { FULL_TIME_PERCENT } from './resourceUtils'
@@ -251,7 +252,7 @@ function HeatmapTable({ grid }) {
                   </Link>
                 </TableCell>
                 {row.cells.map((cell, index) => (
-                  <AllocationCell key={cell.projectId} cell={cell} startsGroup={index === firstUncounted} />
+                  <AllocationCell key={cell.projectId} cell={cell} startsGroup={index === firstUncounted} rowOverAllocated={row.overAllocated} />
                 ))}
                 <TotalCell row={row} />
               </TableRow>
@@ -264,10 +265,16 @@ function HeatmapTable({ grid }) {
   )
 }
 
-/** One allocation: its % on a shade of blue, or greyed out when the project does not count. */
-function AllocationCell({ cell, startsGroup }) {
+/** One allocation: thermal shading by %, turning red when over-allocated, or greyed out when inactive. */
+function AllocationCell({ cell, startsGroup, rowOverAllocated }) {
+  const isOverLimitCell = cell.counted && rowOverAllocated && cell.percent > 0
+  const background = isOverLimitCell ? OVER_LIMIT_CELL_BACKGROUND : heatStep(cell.percent)?.background
   const shade = cell.counted
-    ? { bgcolor: heatStep(cell.percent)?.background, color: HEAT_TEXT }
+    ? {
+        bgcolor: background,
+        color: HEAT_TEXT,
+        ...(isOverLimitCell ? { boxShadow: 'inset 0 0 0 1px rgba(185, 28, 28, 0.35)', fontWeight: 600 } : {}),
+      }
     : { bgcolor: MUTED_BACKGROUND, color: MUTED_TEXT }
   return (
     <TableCell align="center" sx={[valueCell, shade, startsGroup && groupStart]}>
@@ -327,6 +334,7 @@ function Legend() {
             {step.label}
           </LegendItem>
         ))}
+        <LegendItem background={OVER_LIMIT_CELL_BACKGROUND}>Above 100% total (over-allocated)</LegendItem>
         <LegendItem background={MUTED_BACKGROUND}>Project not active – not counted</LegendItem>
       </Box>
     </Box>

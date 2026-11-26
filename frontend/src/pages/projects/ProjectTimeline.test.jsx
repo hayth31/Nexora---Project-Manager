@@ -110,7 +110,7 @@ describe('ProjectTimeline', () => {
     expect(ring.position).toBe('absolute')
     expect(ring.outlineStyle).toBe('solid')
     expect(ring.outlineWidth).toBe('2px')
-    expect(ring.outlineColor).toBe('rgb(29, 78, 216)')
+    expect(ring.outlineColor).toBe('rgb(79, 70, 229)')
     expect(getComputedStyle(rowOf('Website revamp')).position).toBe('relative')
 
     await user.keyboard('{Enter}')

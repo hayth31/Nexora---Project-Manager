@@ -7,7 +7,7 @@ import { renderWithProviders } from '../test/renderWithProviders'
 import StatCard from './StatCard'
 
 const ERROR_RED = 'rgb(185, 28, 28)'
-const PRIMARY_BLUE = 'rgb(29, 78, 216)'
+const PRIMARY_BLUE = 'rgb(79, 70, 229)'
 
 const RISK = {
   label: 'Projects at risk',

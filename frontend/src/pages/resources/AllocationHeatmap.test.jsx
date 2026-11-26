@@ -8,7 +8,7 @@ import { ApiError } from '../../services/apiClient'
 import { resourcesApi } from '../../services/resourcesApi'
 import { renderWithProviders } from '../../test/renderWithProviders'
 import AllocationHeatmap from './AllocationHeatmap'
-import { HEAT_STEPS, MUTED_BACKGROUND, OVER_ALLOCATED_BACKGROUND } from './heatmapGrid'
+import { HEAT_STEPS, MUTED_BACKGROUND, OVER_ALLOCATED_BACKGROUND, OVER_LIMIT_CELL_BACKGROUND } from './heatmapGrid'
 import { list, MARIA, PRIYA, PRIYA_APOLLO, PRIYA_HERMES, PRIYA_ZEUS, RESOURCES, TOM, TOM_APOLLO } from './resourceFixtures'
 
 vi.mock('../../services/resourcesApi', () => ({ resourcesApi: { list: vi.fn() } }))
@@ -181,8 +181,8 @@ describe('AllocationHeatmap', () => {
     renderHeatmap()
     await findHeatmap()
     const [priyaApollo, priyaZeus, priyaHermes, priyaTotal] = cellsOf('Priya Shah')
-    expect(priyaApollo).toHaveStyle({ backgroundColor: HEAT_STEPS[2].background })
-    expect(priyaZeus).toHaveStyle({ backgroundColor: HEAT_STEPS[2].background })
+    expect(priyaApollo).toHaveStyle({ backgroundColor: OVER_LIMIT_CELL_BACKGROUND })
+    expect(priyaZeus).toHaveStyle({ backgroundColor: OVER_LIMIT_CELL_BACKGROUND })
     expect(cellsOf('Tom Lee')[0]).toHaveStyle({ backgroundColor: HEAT_STEPS[1].background })
     expect(priyaHermes).toHaveStyle({ backgroundColor: MUTED_BACKGROUND })
     expect(cellsOf('Tom Lee')[2]).toHaveStyle({ backgroundColor: MUTED_BACKGROUND })
@@ -200,6 +200,7 @@ describe('AllocationHeatmap', () => {
       '26–50%',
       '51–75%',
       '76–100%',
+      'Above 100% total (over-allocated)',
       'Project not active – not counted',
     ])
   })
