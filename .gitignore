@@ -262,7 +262,14 @@ tfplan
 backend/pm-service/*
 !backend/pm-service/function.py
 !backend/pm-service/requirements.txt
+!backend/pm-service/dev_server.py
+!backend/pm-service/Dockerfile
+!backend/pm-service/.dockerignore
 !backend/pm-service/app/
+
+# Allow .env.example files (they don't contain secrets)
+!.env.example
+!frontend/.env.example
 
 # Cypress artifacts
 e2e/cypress/screenshots/

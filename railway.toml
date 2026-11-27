@@ -1,0 +1,12 @@
+# Railway deployment config for Nexora backend (pm-service)
+# Railway reads this file from the repo root or the service's root directory.
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "cd backend/pm-service && python dev_server.py"
+healthcheckPath = "/api/pm-service/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
